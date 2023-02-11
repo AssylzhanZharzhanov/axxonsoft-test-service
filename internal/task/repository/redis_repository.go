@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/domain"
@@ -22,6 +23,10 @@ func NewRedisRepository(client *redis.Client) domain.TaskRedisRepository {
 }
 
 func (r *redisRepository) Set(ctx context.Context, key string, value *domain.Task, seconds int) error {
+	if len(key) == 0 {
+		return fmt.Errorf("key required")
+	}
+
 	bytes, err := json.Marshal(value)
 	if err != nil {
 		return err
@@ -41,7 +46,7 @@ func (r *redisRepository) Get(ctx context.Context, key string) (*domain.Task, er
 	}
 
 	var task *domain.Task
-	err = json.Unmarshal(value, task)
+	err = json.Unmarshal(value, &task)
 	if err != nil {
 		return nil, err
 	}
