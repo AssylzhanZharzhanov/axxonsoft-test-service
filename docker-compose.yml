@@ -1,0 +1,43 @@
+version: '3.7'
+
+services:
+  postgres:
+    image: postgres:13.4
+    restart: always
+    volumes:
+      - postgres_storage:/var/lib/postgresql/data:z
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass redis
+    volumes:
+      - redis_storage:/data
+
+  app:
+    image: golang:1.19-alpine
+    working_dir: /app
+    command: go run cmd/app/main.go
+    env_file:
+      - config/config.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  postgres_storage:
+    driver: local
+  redis_storage:
+    driver: local
