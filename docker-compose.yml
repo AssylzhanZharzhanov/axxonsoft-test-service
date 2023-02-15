@@ -31,6 +31,13 @@ services:
     depends_on:
       - postgres
 
+  rabbitmq:
+    image: rabbitmq:3.9-management-alpine
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
   app:
     image: golang:1.19-alpine
     working_dir: /app
@@ -44,6 +51,7 @@ services:
     depends_on:
       - postgres
       - redis
+      - rabbitmq
 
 volumes:
   postgres_storage:

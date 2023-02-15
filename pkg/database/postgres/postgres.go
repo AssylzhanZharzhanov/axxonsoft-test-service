@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/domain"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -28,4 +30,12 @@ func NewConnection(dsn string) (*gorm.DB, error) {
 	}
 
 	return gormDB, nil
+}
+
+// Paginate - gorm pagination.
+func Paginate(page domain.PageRequest) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		db = db.Offset(page.Offset * page.Size).Limit(page.Size)
+		return db
+	}
 }

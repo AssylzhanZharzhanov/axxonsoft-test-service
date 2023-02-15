@@ -69,9 +69,10 @@ func MakeListTasksEndpoint(service domain.TaskService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(listTaskRequest)
 
-		resp, err := service.ListTasks(ctx, req.Criteria)
+		resp, total, err := service.ListTasks(ctx, req.Criteria)
 		return listTaskResponse{
 			Tasks: resp,
+			Total: int(total),
 			Err:   err,
 		}, nil
 	}
@@ -83,5 +84,6 @@ type listTaskRequest struct {
 
 type listTaskResponse struct {
 	Tasks []*domain.Task
+	Total int
 	Err   error
 }

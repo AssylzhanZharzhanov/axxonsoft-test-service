@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"github.com/AssylzhanZharzhanov/axxonsoft-test-service/pkg/database/postgres"
 
 	"github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/domain"
 
@@ -48,16 +49,17 @@ func (r *repository) Get(ctx context.Context, taskID domain.TaskID) (*domain.Tas
 	return task, nil
 }
 
-func (r *repository) List(ctx context.Context, criteria domain.TaskSearchCriteria) ([]*domain.Task, error) {
+func (r *repository) List(ctx context.Context, criteria domain.TaskSearchCriteria) ([]*domain.Task, domain.Total, error) {
 	var (
-		db    = r.db
-		tasks []*domain.Task
+		db         = r.db
+		tasks      []*domain.Task
+		totalCount int64
 	)
 
-	err := db.WithContext(ctx).Table(domain.TableName).Find(&tasks).Error
+	err := db.WithContext(ctx).Scopes(postgres.Paginate(criteria.Page)).Table(domain.TableName).Find(&tasks).Count(&totalCount).Error
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return tasks, nil
+	return tasks, domain.Total(totalCount), nil
 }

@@ -51,14 +51,16 @@ func (mw loggingMiddleware) GetTask(ctx context.Context, taskID domain.TaskID) (
 	return mw.next.GetTask(ctx, taskID)
 }
 
-func (mw loggingMiddleware) ListTasks(ctx context.Context, criteria domain.TaskSearchCriteria) (result []*domain.Task, err error) {
+func (mw loggingMiddleware) ListTasks(ctx context.Context, criteria domain.TaskSearchCriteria) (result []*domain.Task, total domain.Total, err error) {
 	defer func() {
 		_ = mw.logger.Log("method", "ListTasks",
 			//domain.LogFieldTraceID, traceID,
 			//domain.LogFieldSpanID, spanID,
 			"criteria", criteria,
 			"err", err,
-			"result", result)
+			"result", result,
+			"total", total,
+		)
 	}()
 	return mw.next.ListTasks(ctx, criteria)
 }

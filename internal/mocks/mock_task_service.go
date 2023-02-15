@@ -66,12 +66,13 @@ func (mr *MockTaskServiceMockRecorder) GetTask(arg0, arg1 interface{}) *gomock.C
 }
 
 // ListTasks mocks base method.
-func (m *MockTaskService) ListTasks(arg0 context.Context, arg1 domain.TaskSearchCriteria) ([]*domain.Task, error) {
+func (m *MockTaskService) ListTasks(arg0 context.Context, arg1 domain.TaskSearchCriteria) ([]*domain.Task, domain.Total, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListTasks", arg0, arg1)
 	ret0, _ := ret[0].([]*domain.Task)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(domain.Total)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // ListTasks indicates an expected call of ListTasks.

@@ -3,7 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/gorilla/mux"
+	pkgPublisher "github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/publisher/service"
+	"github.com/AssylzhanZharzhanov/axxonsoft-test-service/pkg/rabbitmq"
 	"net/http"
 	"os"
 	"os/signal"
@@ -19,6 +20,7 @@ import (
 
 	kitzapadapter "github.com/go-kit/kit/log/zap"
 	"github.com/go-kit/log"
+	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -68,21 +70,39 @@ func main() {
 		logFatal(err)
 	}
 
-	//Repository layer.
+	// Setup amqp connection
+	amqpConn, err := rabbitmq.NewRabbitMQConnection(cfg.RabbitMQURI)
+	if err != nil {
+		logFatal(err)
+	}
+	defer amqpConn.Close()
+
+	amqpChan, err := amqpConn.Channel()
+	if err != nil {
+		logFatal(err)
+	}
+	defer amqpChan.Close()
+
+	// Repository layer.
 	//
 	taskRepository := pkgTaskRepository.NewRepository(db)
 	taskRedisRepository := pkgTaskRepository.NewRedisRepository(redisClient)
 
-	//Service layer.
+	// Service layer.
 	//
-	eventService := pkgEventService.NewService()
+	publisher := pkgPublisher.NewService(amqpConn, amqpChan, logger)
+	eventService := pkgEventService.NewService(publisher, logger)
 	taskService := pkgTaskService.NewService(eventService, taskRepository, taskRedisRepository, logger)
 
+	// Endpoints layer.
+	//
 	taskEndpoints := pkgTaskEndpoints.NewEndpoints(taskService, logger)
 
 	r := mux.NewRouter()
-
-	pkgTaskEndpoints.RegisterRoutersV1(r, taskEndpoints, logger)
+	{
+		pkgTaskEndpoints.RegisterRoutersV1(r, taskEndpoints, logger)
+	}
+	http.Handle("/", accessControl(r, "*"))
 
 	// This function just sits and waits for ctrl-C.
 	errs := make(chan error)
@@ -96,4 +116,21 @@ func main() {
 		errs <- http.ListenAndServe(*httpAddr, nil)
 	}()
 	_ = logger.Log("exit", <-errs)
+}
+
+func accessControl(h http.Handler, allowedOrigins string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		allowedHeaders := "Accept, Origin, Content-Type, Content-Length, Authorization, Firebase-Authorization, X-Request-Server-TimeZone, X-Time-Zone, x-requested-with, Idempotency-Key"
+
+		w.Header().Set("Access-Control-Allow-Origin", allowedOrigins)
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE, PATCH")
+		w.Header().Set("Access-Control-Allow-Headers", allowedHeaders)
+
+		if r.Method == "OPTIONS" {
+			return
+		}
+
+		h.ServeHTTP(w, r)
+	})
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/domain"
 	"github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/helpers"
 
 	"github.com/go-kit/kit/transport"
@@ -19,21 +20,21 @@ func RegisterRoutersV1(router *mux.Router, endpoints Endpoints, logger log.Logge
 		kithttp.ServerErrorHandler(transport.NewLogErrorHandler(logger)),
 	}
 
-	router.Methods("POST").Path("/tasks").Handler(kithttp.NewServer(
+	router.Methods("POST").Path("/v1/tasks").Handler(kithttp.NewServer(
 		endpoints.CreateTaskEndpoint,
 		decodeCreateTaskRequest,
 		helpers.EncodeResponse,
 		options...,
 	))
 
-	router.Methods("GET").Path("/tasks/{id}").Handler(kithttp.NewServer(
+	router.Methods("GET").Path("/v1/tasks/{id}").Handler(kithttp.NewServer(
 		endpoints.GetTaskEndpoint,
 		decodeGetTaskRequest,
 		helpers.EncodeResponse,
 		options...,
 	))
 
-	router.Methods("GET").Path("/tasks").Handler(kithttp.NewServer(
+	router.Methods("GET").Path("/v1/tasks").Handler(kithttp.NewServer(
 		endpoints.ListTasksEndpoint,
 		decodeListTasksRequest,
 		helpers.EncodeResponse,
@@ -42,17 +43,42 @@ func RegisterRoutersV1(router *mux.Router, endpoints Endpoints, logger log.Logge
 }
 
 func decodeCreateTaskRequest(ctx context.Context, r *http.Request) (interface{}, error) {
-	var req createTaskRequest
-	if err := json.NewDecoder(r.Body).Decode(&req.Task); err != nil {
+	var body domain.TaskWrite
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		return nil, err
 	}
-	return req, nil
+	return createTaskRequest{
+		Task: &domain.Task{
+			Method: body.Method,
+			URL:    body.URL,
+		},
+	}, nil
 }
 
 func decodeGetTaskRequest(ctx context.Context, request *http.Request) (interface{}, error) {
-	return nil, nil
+	vars := mux.Vars(request)
+	id, err := helpers.ExtractInt64Route(vars, "id")
+	if err != nil {
+		return nil, err
+	}
+	return getTaskRequest{
+		TaskID: domain.TaskID(id),
+	}, nil
 }
 
 func decodeListTasksRequest(ctx context.Context, request *http.Request) (interface{}, error) {
-	return nil, nil
+	var (
+		query = request.URL.Query()
+		page  = helpers.ParsePageOrGetDefault(query.Get("page"))
+		size  = helpers.ParseSizeOrGetDefault(query.Get("size"))
+	)
+
+	return listTaskRequest{
+		Criteria: domain.TaskSearchCriteria{
+			Page: domain.PageRequest{
+				Offset: helpers.PageOffset(page, size),
+				Size:   int(size),
+			},
+		},
+	}, nil
 }
