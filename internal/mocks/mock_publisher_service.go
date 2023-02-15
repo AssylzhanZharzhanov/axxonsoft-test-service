@@ -8,8 +8,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	domain "github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/domain"
 	gomock "github.com/golang/mock/gomock"
+	amqp091 "github.com/rabbitmq/amqp091-go"
 )
 
 // MockPublisher is a mock of Publisher interface.
@@ -36,7 +36,7 @@ func (m *MockPublisher) EXPECT() *MockPublisherMockRecorder {
 }
 
 // Publish mocks base method.
-func (m *MockPublisher) Publish(arg0 context.Context, arg1 *domain.Event) error {
+func (m *MockPublisher) Publish(arg0 context.Context, arg1 *amqp091.Publishing) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Publish", arg0, arg1)
 	ret0, _ := ret[0].(error)

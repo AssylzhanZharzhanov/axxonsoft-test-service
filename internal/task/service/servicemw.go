@@ -64,3 +64,15 @@ func (mw loggingMiddleware) ListTasks(ctx context.Context, criteria domain.TaskS
 	}()
 	return mw.next.ListTasks(ctx, criteria)
 }
+
+func (mw loggingMiddleware) UpdateTask(ctx context.Context, task *domain.Task) (err error) {
+	defer func() {
+		_ = mw.logger.Log("method", "UpdateTask",
+			//domain.LogFieldTraceID, traceID,
+			//domain.LogFieldSpanID, spanID,
+			"task", task,
+			"err", err,
+		)
+	}()
+	return mw.next.UpdateTask(ctx, task)
+}

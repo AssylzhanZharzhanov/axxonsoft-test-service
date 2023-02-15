@@ -97,3 +97,7 @@ func (s *service) GetTask(ctx context.Context, taskID domain.TaskID) (*domain.Ta
 func (s *service) ListTasks(ctx context.Context, criteria domain.TaskSearchCriteria) ([]*domain.Task, domain.Total, error) {
 	return s.repository.List(ctx, criteria)
 }
+
+func (s *service) UpdateTask(ctx context.Context, task *domain.Task) error {
+	return s.repository.Update(ctx, task)
+}

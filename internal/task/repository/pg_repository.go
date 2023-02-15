@@ -21,7 +21,6 @@ func NewRepository(db *gorm.DB) domain.TaskRepository {
 }
 
 func (r *repository) Create(ctx context.Context, task *domain.Task) (domain.TaskID, error) {
-
 	var (
 		db = r.db
 	)
@@ -35,7 +34,6 @@ func (r *repository) Create(ctx context.Context, task *domain.Task) (domain.Task
 }
 
 func (r *repository) Get(ctx context.Context, taskID domain.TaskID) (*domain.Task, error) {
-
 	var (
 		db   = r.db
 		task *domain.Task
@@ -62,4 +60,17 @@ func (r *repository) List(ctx context.Context, criteria domain.TaskSearchCriteri
 	}
 
 	return tasks, domain.Total(totalCount), nil
+}
+
+func (r *repository) Update(ctx context.Context, task *domain.Task) error {
+	var (
+		db = r.db
+	)
+
+	err := db.WithContext(ctx).Table(domain.TableName).Where("id = ?", task.ID).Updates(&task).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

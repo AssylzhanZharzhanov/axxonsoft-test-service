@@ -14,4 +14,5 @@ type AppConfig struct {
 	ExchangeName  string `env:"EXCHANGE_NAME" validate:"required"`
 	ExchangeKind  string `env:"EXCHANGE_KIND" validate:"required"`
 	QueueName     string `env:"QUEUE_NAME" validate:"required"`
+	Consumer      string `env:"CONSUMER" validate:"required"`
 }
