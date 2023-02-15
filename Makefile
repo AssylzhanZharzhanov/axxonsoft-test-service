@@ -23,3 +23,7 @@ mocks:
 	mockgen \
 		-package mocks -destination=internal/mocks/mock_event_service.go \
 		-package mocks github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/domain EventService
+
+	mockgen \
+		-package mocks -destination=internal/mocks/mock_publisher_service.go \
+		-package mocks github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/domain Publisher

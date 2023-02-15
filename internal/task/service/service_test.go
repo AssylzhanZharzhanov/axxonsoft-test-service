@@ -17,14 +17,14 @@ func TestService_CreateTask(t *testing.T) {
 		ctx       = context.Background()
 		validTask = &domain.Task{
 			ID:             1,
-			Status:         1,
+			StatusID:       1,
 			HTTPStatusCode: 0,
 			ContentLength:  0,
 			Method:         "GET",
 			URL:            "test.com",
-			Headers: domain.Header{
-				Authentication: "Bearer 123",
-			},
+			//Headers: domain.Header{
+			//	Authentication: "Bearer 123",
+			//},
 		}
 	)
 
@@ -80,9 +80,9 @@ func TestService_CreateTask(t *testing.T) {
 				task: &domain.Task{
 					Method: "",
 					URL:    "test.com",
-					Headers: domain.Header{
-						Authentication: "Bearer 123",
-					},
+					//Headers: domain.Header{
+					//	Authentication: "Bearer 123",
+					//},
 				},
 			},
 			expected: result{
@@ -96,9 +96,9 @@ func TestService_CreateTask(t *testing.T) {
 				task: &domain.Task{
 					Method: "GET",
 					URL:    "",
-					Headers: domain.Header{
-						Authentication: "Bearer 123",
-					},
+					//Headers: domain.Header{
+					//	Authentication: "Bearer 123",
+					//},
 				},
 			},
 			expected: result{
@@ -140,7 +140,7 @@ func TestService_GetTask(t *testing.T) {
 		cachedKey  = "?task/1"
 		validTask1 = &domain.Task{
 			ID:             1,
-			Status:         3,
+			StatusID:       3,
 			HTTPStatusCode: 200,
 			ContentLength:  200,
 			Method:         "GET",
@@ -150,7 +150,7 @@ func TestService_GetTask(t *testing.T) {
 		notCachedKey = "?task/2"
 		validTask2   = &domain.Task{
 			ID:             2,
-			Status:         3,
+			StatusID:       3,
 			HTTPStatusCode: 200,
 			ContentLength:  200,
 			Method:         "POST",

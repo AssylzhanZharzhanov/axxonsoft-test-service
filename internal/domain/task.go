@@ -21,18 +21,27 @@ type Header struct {
 	ContentType    string
 }
 
+// TaskWrite - represents write task
+type TaskWrite struct {
+	ID     TaskID `json:"id"`
+	Method string `json:"method"`
+	URL    string `json:"url"`
+	//Headers        Header   `json:"headers" gorm:"column:headers"`
+}
+
 // Task - represents task
 type Task struct {
-	ID             TaskID   `json:"ID"`
-	Status         StatusID `json:"status"`
-	HTTPStatusCode int      `json:"http_status_code"`
-	ContentLength  int      `json:"content_length"`
-	Headers        Header   `json:"headers"`
-	Method         string   `json:"method"`
-	URL            string   `json:"URL"`
+	ID             TaskID   `json:"id" gorm:"primaryKey;autoIncrement;column:id"`
+	StatusID       StatusID `json:"status_id" gorm:"column:status_id"`
+	HTTPStatusCode int      `json:"http_status_code" gorm:"column:http_status_code"`
+	ContentLength  int      `json:"content_length" gorm:"column:content_length"`
+	Method         string   `json:"method" gorm:"not null;column:method"`
+	URL            string   `json:"url" gorm:"not null;column:url"`
+	//Headers        Header   `json:"headers" gorm:"column:headers"`
 }
 
 type TaskSearchCriteria struct {
+	Page PageRequest
 }
 
 // Validate - validates struct.
@@ -47,6 +56,10 @@ func (t Task) Validate() error {
 	return nil
 }
 
+func (id TaskID) Key() string {
+	return fmt.Sprintf("?task/%d", id)
+}
+
 // TaskReadRepository - provides read access to a storage.
 type TaskReadRepository interface {
 
@@ -56,7 +69,7 @@ type TaskReadRepository interface {
 
 	// List - returns list of tasks from storage
 	//
-	List(ctx context.Context, criteria TaskSearchCriteria) ([]*Task, error)
+	List(ctx context.Context, criteria TaskSearchCriteria) ([]*Task, Total, error)
 }
 
 // TaskRepository - provides access to a storage.
@@ -97,5 +110,5 @@ type TaskService interface {
 
 	// ListTasks - returns list of tasks
 	//
-	ListTasks(ctx context.Context, criteria TaskSearchCriteria) ([]*Task, error)
+	ListTasks(ctx context.Context, criteria TaskSearchCriteria) ([]*Task, Total, error)
 }

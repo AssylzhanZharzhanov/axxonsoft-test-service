@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	domain "github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/domain"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -35,15 +36,15 @@ func (m *MockEventService) EXPECT() *MockEventServiceMockRecorder {
 }
 
 // RegisterEvent mocks base method.
-func (m *MockEventService) RegisterEvent(arg0 context.Context) error {
+func (m *MockEventService) RegisterEvent(arg0 context.Context, arg1 *domain.Event) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterEvent", arg0)
+	ret := m.ctrl.Call(m, "RegisterEvent", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RegisterEvent indicates an expected call of RegisterEvent.
-func (mr *MockEventServiceMockRecorder) RegisterEvent(arg0 interface{}) *gomock.Call {
+func (mr *MockEventServiceMockRecorder) RegisterEvent(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterEvent", reflect.TypeOf((*MockEventService)(nil).RegisterEvent), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterEvent", reflect.TypeOf((*MockEventService)(nil).RegisterEvent), arg0, arg1)
 }

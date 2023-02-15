@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	cacheDuration = 3600
+	cacheDuration = 60
 )
 
 type service struct {
@@ -47,6 +47,7 @@ func (s *service) CreateTask(ctx context.Context, task *domain.Task) (domain.Tas
 	if err := task.Validate(); err != nil {
 		return 0, err
 	}
+	task.StatusID = domain.StatusID(domain.StatusNew)
 
 	return s.repository.Create(ctx, task)
 }
@@ -57,11 +58,7 @@ func (s *service) GetTask(ctx context.Context, taskID domain.TaskID) (*domain.Ta
 	}
 
 	// Get from cache
-	key := fmt.Sprintf("?task/%d", taskID)
-	cachedTask, err := s.redisRepository.Get(ctx, key)
-	if err != nil {
-		return nil, err
-	}
+	cachedTask, err := s.redisRepository.Get(ctx, taskID.Key())
 	if cachedTask != nil {
 		return cachedTask, nil
 	}
@@ -73,7 +70,7 @@ func (s *service) GetTask(ctx context.Context, taskID domain.TaskID) (*domain.Ta
 	}
 
 	// Set new value to cache
-	err = s.redisRepository.Set(ctx, key, result, cacheDuration)
+	err = s.redisRepository.Set(ctx, taskID.Key(), result, cacheDuration)
 	if err != nil {
 		return nil, err
 	}
@@ -81,6 +78,6 @@ func (s *service) GetTask(ctx context.Context, taskID domain.TaskID) (*domain.Ta
 	return result, err
 }
 
-func (s *service) ListTasks(ctx context.Context, criteria domain.TaskSearchCriteria) ([]*domain.Task, error) {
+func (s *service) ListTasks(ctx context.Context, criteria domain.TaskSearchCriteria) ([]*domain.Task, domain.Total, error) {
 	return s.repository.List(ctx, criteria)
 }

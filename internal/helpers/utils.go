@@ -17,10 +17,10 @@ func LoadConfig() (config domain.AppConfig, _ error) {
 }
 
 // PageOffset - converts a page number to the page offset.
-func PageOffset(page uint32, size uint32) int32 {
+func PageOffset(page uint32, size uint32) int {
 	if page == 0 || page == 1 {
 		return 0
 	}
 	offset := (page-1)*size + 1
-	return int32(offset)
+	return int(offset)
 }

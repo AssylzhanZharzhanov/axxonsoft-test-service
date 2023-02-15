@@ -9,12 +9,12 @@ import (
 )
 
 // Middleware describes a service (as opposed to endpoint) middleware.
-type middleware func(taskService domain.EventService) domain.EventService
+type middleware func(taskService domain.Publisher) domain.Publisher
 
 // loggingServiceMiddleware takes a logger as a dependency
 // and returns a service Middleware.
 func loggingServiceMiddleware(logger log.Logger) middleware {
-	return func(next domain.EventService) domain.EventService {
+	return func(next domain.Publisher) domain.Publisher {
 		return loggingMiddleware{
 			logger: logger,
 			next:   next,
@@ -24,18 +24,17 @@ func loggingServiceMiddleware(logger log.Logger) middleware {
 
 type loggingMiddleware struct {
 	logger log.Logger
-	next   domain.EventService
+	next   domain.Publisher
 }
 
-func (mw loggingMiddleware) RegisterEvent(ctx context.Context, event *domain.Event) (err error) {
+func (mw loggingMiddleware) Publish(ctx context.Context, event *domain.Event) (err error) {
 	defer func() {
-		_ = mw.logger.Log("method", "RegisterEvent",
+		_ = mw.logger.Log("method", "Publish",
 			//domain.LogFieldTraceID, traceID,
 			//domain.LogFieldSpanID, spanID,
 			"event", event,
 			"err", err,
 		)
 	}()
-
-	return mw.next.RegisterEvent(ctx, event)
+	return mw.next.Publish(ctx, event)
 }
