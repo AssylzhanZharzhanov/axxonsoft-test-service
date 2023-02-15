@@ -22,12 +22,21 @@ services:
     volumes:
       - redis_storage:/data
 
+  migrations:
+    image: registry.gitlab.com/zharzhanov/postgresql.data-migration:latest
+    environment:
+      - DSN=user=user password=password host=postgres port=5432 dbname=postgres sslmode=disable
+    volumes:
+      - ./migrations/postgresql:/migrations
+    depends_on:
+      - postgres
+
   app:
     image: golang:1.19-alpine
     working_dir: /app
     command: go run cmd/app/main.go
     env_file:
-      - config/config.env
+      - .env
     ports:
       - "8000:8000"
     volumes:

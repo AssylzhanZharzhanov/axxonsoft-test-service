@@ -35,9 +35,11 @@ func (m *MockEventService) EXPECT() *MockEventServiceMockRecorder {
 }
 
 // RegisterEvent mocks base method.
-func (m *MockEventService) RegisterEvent(arg0 context.Context) {
+func (m *MockEventService) RegisterEvent(arg0 context.Context) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RegisterEvent", arg0)
+	ret := m.ctrl.Call(m, "RegisterEvent", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // RegisterEvent indicates an expected call of RegisterEvent.

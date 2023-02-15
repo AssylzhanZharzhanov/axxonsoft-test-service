@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/domain"
+
+	"github.com/go-kit/log"
 )
 
 const (
@@ -22,8 +24,10 @@ func NewService(
 	eventService domain.EventService,
 	repository domain.TaskRepository,
 	redisRepository domain.TaskRedisRepository,
+	logger log.Logger,
 ) domain.TaskService {
 	service := newBasicService(eventService, repository, redisRepository)
+	service = loggingServiceMiddleware(logger)(service)
 	return service
 }
 

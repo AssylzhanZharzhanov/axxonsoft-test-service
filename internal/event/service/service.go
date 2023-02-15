@@ -13,7 +13,7 @@ func NewService() domain.EventService {
 	return &service{}
 }
 
-func (s service) RegisterEvent(ctx context.Context) {
+func (s service) RegisterEvent(ctx context.Context) error {
 	//TODO implement me
 	panic("implement me")
 }

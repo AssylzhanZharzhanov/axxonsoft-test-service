@@ -6,5 +6,5 @@ type Event struct {
 }
 
 type EventService interface {
-	RegisterEvent(ctx context.Context)
+	RegisterEvent(ctx context.Context) error
 }
