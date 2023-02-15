@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/domain"
 
@@ -49,7 +50,22 @@ func (s *service) CreateTask(ctx context.Context, task *domain.Task) (domain.Tas
 	}
 	task.StatusID = domain.StatusID(domain.StatusNew)
 
-	return s.repository.Create(ctx, task)
+	// Create task in storage
+	taskID, err := s.repository.Create(ctx, task)
+	if err != nil {
+		return 0, err
+	}
+
+	// Create event
+	event := &domain.Event{
+		TaskID:    taskID,
+		CreatedAt: time.Now().Unix(),
+	}
+	if err := s.eventService.RegisterEvent(ctx, event); err != nil {
+		return 0, err
+	}
+
+	return taskID, nil
 }
 
 func (s *service) GetTask(ctx context.Context, taskID domain.TaskID) (*domain.Task, error) {

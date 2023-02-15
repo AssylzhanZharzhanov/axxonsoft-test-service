@@ -11,4 +11,7 @@ type AppConfig struct {
 	RedisPoolSize int    `env:"REDIS_POOLSIZE" validate:"required"`
 	RedisDB       int    `env:"REDIS_DB" validate:"required"`
 	RabbitMQURI   string `env:"RABBITMQ_URI" validate:"required"`
+	ExchangeName  string `env:"EXCHANGE_NAME" validate:"required"`
+	ExchangeKind  string `env:"EXCHANGE_KIND" validate:"required"`
+	QueueName     string `env:"QUEUE_NAME" validate:"required"`
 }

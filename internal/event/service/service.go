@@ -2,7 +2,10 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	amqp "github.com/rabbitmq/amqp091-go"
+	"time"
 
 	"github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/domain"
 
@@ -37,7 +40,17 @@ func (s *service) RegisterEvent(ctx context.Context, event *domain.Event) error 
 		return err
 	}
 
-	if err := s.publisher.Publish(ctx, event); err != nil {
+	dataBytes, err := json.Marshal(&event)
+	if err != nil {
+		return err
+	}
+
+	msg := &amqp.Publishing{
+		Timestamp: time.Now().UTC(),
+		Body:      dataBytes,
+	}
+
+	if err := s.publisher.Publish(ctx, msg); err != nil {
 		return err
 	}
 

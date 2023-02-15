@@ -2,8 +2,12 @@ package domain
 
 import (
 	"context"
+
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type Publisher interface {
-	Publish(ctx context.Context, event *Event) error
+	// Publish - publishes event in message queue
+	//
+	Publish(ctx context.Context, msg *amqp.Publishing) error
 }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	amqp "github.com/rabbitmq/amqp091-go"
 
 	"github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/domain"
 
@@ -27,14 +28,14 @@ type loggingMiddleware struct {
 	next   domain.Publisher
 }
 
-func (mw loggingMiddleware) Publish(ctx context.Context, event *domain.Event) (err error) {
+func (mw loggingMiddleware) Publish(ctx context.Context, msg *amqp.Publishing) (err error) {
 	defer func() {
 		_ = mw.logger.Log("method", "Publish",
 			//domain.LogFieldTraceID, traceID,
 			//domain.LogFieldSpanID, spanID,
-			"event", event,
+			"msg", msg,
 			"err", err,
 		)
 	}()
-	return mw.next.Publish(ctx, event)
+	return mw.next.Publish(ctx, msg)
 }

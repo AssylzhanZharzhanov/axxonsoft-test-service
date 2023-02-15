@@ -3,8 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	pkgPublisher "github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/publisher/service"
-	"github.com/AssylzhanZharzhanov/axxonsoft-test-service/pkg/rabbitmq"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,11 +10,13 @@ import (
 
 	pkgEventService "github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/event/service"
 	pkgHelpers "github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/helpers"
+	pkgPublisher "github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/publisher/service"
 	pkgTaskRepository "github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/task/repository"
 	pkgTaskService "github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/task/service"
 	pkgTaskEndpoints "github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/task/transport"
 	pkgPostgres "github.com/AssylzhanZharzhanov/axxonsoft-test-service/pkg/database/postgres"
 	pkgRedis "github.com/AssylzhanZharzhanov/axxonsoft-test-service/pkg/database/redis"
+	pkgRabbitMQ "github.com/AssylzhanZharzhanov/axxonsoft-test-service/pkg/rabbitmq"
 
 	kitzapadapter "github.com/go-kit/kit/log/zap"
 	"github.com/go-kit/log"
@@ -71,7 +71,7 @@ func main() {
 	}
 
 	// Setup amqp connection
-	amqpConn, err := rabbitmq.NewRabbitMQConnection(cfg.RabbitMQURI)
+	amqpConn, err := pkgRabbitMQ.NewRabbitMQConnection(cfg.RabbitMQURI)
 	if err != nil {
 		logFatal(err)
 	}
@@ -83,6 +83,11 @@ func main() {
 	}
 	defer amqpChan.Close()
 
+	_, err = pkgRabbitMQ.DeclareBinding(amqpChan, cfg.ExchangeName, cfg.ExchangeKind)
+	if err != nil {
+		logFatal(err)
+	}
+
 	// Repository layer.
 	//
 	taskRepository := pkgTaskRepository.NewRepository(db)
@@ -90,7 +95,7 @@ func main() {
 
 	// Service layer.
 	//
-	publisher := pkgPublisher.NewService(amqpConn, amqpChan, logger)
+	publisher := pkgPublisher.NewService(amqpConn, amqpChan, cfg.ExchangeName, cfg.ExchangeKind, logger)
 	eventService := pkgEventService.NewService(publisher, logger)
 	taskService := pkgTaskService.NewService(eventService, taskRepository, taskRedisRepository, logger)
 

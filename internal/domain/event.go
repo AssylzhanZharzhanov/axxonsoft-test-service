@@ -19,5 +19,7 @@ func (e Event) Validate() error {
 }
 
 type EventService interface {
+	// RegisterEvent - creates a new event and publish it to queue
+	//
 	RegisterEvent(ctx context.Context, event *Event) error
 }
