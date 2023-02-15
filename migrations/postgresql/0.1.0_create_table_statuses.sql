@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS statuses(
+    id   SERIAL NOT NULL PRIMARY KEY,
+    name VARCHAR
+);

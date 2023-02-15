@@ -3,12 +3,17 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/gorilla/mux"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	pkgEventService "github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/event/service"
 	pkgHelpers "github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/helpers"
 	pkgTaskRepository "github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/task/repository"
 	pkgTaskService "github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/task/service"
+	pkgTaskEndpoints "github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/task/transport"
 	pkgPostgres "github.com/AssylzhanZharzhanov/axxonsoft-test-service/pkg/database/postgres"
 	pkgRedis "github.com/AssylzhanZharzhanov/axxonsoft-test-service/pkg/database/redis"
 
@@ -45,7 +50,7 @@ func main() {
 	// Define our flags.
 	//
 	fs := flag.NewFlagSet("", flag.ExitOnError)
-	_ = fs.String("http-addr", fmt.Sprintf(":%s", cfg.Port), "HTTP listen address")
+	httpAddr := fs.String("http-addr", fmt.Sprintf(":%s", cfg.Port), "HTTP listen address")
 	err = fs.Parse(os.Args[1:])
 	if err != nil {
 		logFatal(err)
@@ -71,6 +76,24 @@ func main() {
 	//Service layer.
 	//
 	eventService := pkgEventService.NewService()
-	_ = pkgTaskService.NewService(eventService, taskRepository, taskRedisRepository)
+	taskService := pkgTaskService.NewService(eventService, taskRepository, taskRedisRepository, logger)
 
+	taskEndpoints := pkgTaskEndpoints.NewEndpoints(taskService, logger)
+
+	r := mux.NewRouter()
+
+	pkgTaskEndpoints.RegisterRoutersV1(r, taskEndpoints, logger)
+
+	// This function just sits and waits for ctrl-C.
+	errs := make(chan error)
+	go func() {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+		errs <- fmt.Errorf("%s", <-c)
+	}()
+	go func() {
+		_ = logger.Log("transport", "HTTP", "addr", *httpAddr)
+		errs <- http.ListenAndServe(*httpAddr, nil)
+	}()
+	_ = logger.Log("exit", <-errs)
 }

@@ -26,7 +26,7 @@ type Task struct {
 	ID             TaskID   `json:"ID"`
 	Status         StatusID `json:"status"`
 	HTTPStatusCode int      `json:"http_status_code"`
-	ContentLength  int64    `json:"content_length"`
+	ContentLength  int      `json:"content_length"`
 	Headers        Header   `json:"headers"`
 	Method         string   `json:"method"`
 	URL            string   `json:"URL"`
