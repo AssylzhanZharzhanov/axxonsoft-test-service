@@ -13,6 +13,7 @@ type service struct {
 	taskRepository domain.TaskRepository
 }
 
+// NewTaskRunnerService - creates a new service
 func NewTaskRunnerService(taskRepository domain.TaskRepository, logger log.Logger) domain.TaskRunnerService {
 	var service domain.TaskRunnerService
 	{
@@ -21,9 +22,9 @@ func NewTaskRunnerService(taskRepository domain.TaskRepository, logger log.Logge
 	return service
 }
 
-func newBasicService(taskService domain.TaskRepository) domain.TaskRunnerService {
+func newBasicService(taskRepository domain.TaskRepository) domain.TaskRunnerService {
 	return &service{
-		taskRepository: taskService,
+		taskRepository: taskRepository,
 	}
 }
 
@@ -34,10 +35,21 @@ func (s *service) RunTask(ctx context.Context, taskID domain.TaskID) error {
 		task.StatusID = domain.StatusError
 	}
 
-	url := task.URL
-	method := task.Method
+	err = s.DoRequest(ctx, task)
+	if err != nil {
+		task.StatusID = domain.StatusError
+	}
 
-	httpRequest, err := http.NewRequestWithContext(ctx, method, url, nil)
+	err = s.taskRepository.Update(ctx, task)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *service) DoRequest(ctx context.Context, task *domain.Task) error {
+	httpRequest, err := http.NewRequestWithContext(ctx, task.Method, task.URL, nil)
 	if err != nil {
 		task.StatusID = domain.StatusError
 	}
@@ -47,17 +59,13 @@ func (s *service) RunTask(ctx context.Context, taskID domain.TaskID) error {
 
 	httpResponse, err := http.DefaultClient.Do(httpRequest)
 	if err != nil {
-		task.StatusID = domain.StatusError
+		return err
 	}
 	defer httpResponse.Body.Close()
 
+	task.StatusID = domain.StatusDone
 	task.HTTPStatusCode = httpResponse.StatusCode
 	task.ContentLength = httpResponse.ContentLength
-
-	err = s.taskRepository.Update(ctx, task)
-	if err != nil {
-		return err
-	}
 
 	return nil
 }

@@ -2,14 +2,13 @@ package main
 
 import (
 	"context"
-	"os"
-
 	pkgConsumer "github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/consumer/service"
 	pkgHelpers "github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/helpers"
 	pkgTaskRepository "github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/task/repository"
 	pkgTaskRunnerService "github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/taskrunner/service"
 	pkgPostgres "github.com/AssylzhanZharzhanov/axxonsoft-test-service/pkg/database/postgres"
 	pkgRabbitMQ "github.com/AssylzhanZharzhanov/axxonsoft-test-service/pkg/rabbitmq"
+	"os"
 
 	kitzapadapter "github.com/go-kit/kit/log/zap"
 	"github.com/go-kit/log"
@@ -61,7 +60,7 @@ func main() {
 	}
 	defer amqpChan.Close()
 
-	_, err = pkgRabbitMQ.DeclareBinding(amqpChan, cfg.ExchangeName, cfg.ExchangeKind)
+	_, err = pkgRabbitMQ.DeclareQueue(amqpChan, cfg.QueueName)
 	if err != nil {
 		logFatal(err)
 	}

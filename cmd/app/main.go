@@ -83,7 +83,7 @@ func main() {
 	}
 	defer amqpChan.Close()
 
-	_, err = pkgRabbitMQ.DeclareBinding(amqpChan, cfg.ExchangeName, cfg.ExchangeKind)
+	_, err = pkgRabbitMQ.DeclareBinding(amqpChan, cfg.ExchangeName, cfg.ExchangeKind, cfg.QueueName)
 	if err != nil {
 		logFatal(err)
 	}

@@ -13,7 +13,7 @@ func NewRabbitMQConnection(uri string) (*amqp.Connection, error) {
 	return conn, nil
 }
 
-func DeclareBinding(amqpChan *amqp.Channel, exchangeName string, exchangeKind string) (amqp.Queue, error) {
+func DeclareBinding(amqpChan *amqp.Channel, exchangeName string, exchangeKind string, queueName string) (amqp.Queue, error) {
 	var (
 		queue amqp.Queue
 	)
@@ -22,7 +22,7 @@ func DeclareBinding(amqpChan *amqp.Channel, exchangeName string, exchangeKind st
 		return queue, err
 	}
 
-	queue, err := DeclareQueue(amqpChan, exchangeName)
+	queue, err := DeclareQueue(amqpChan, queueName)
 	if err != nil {
 		return queue, err
 	}

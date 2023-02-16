@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
-
+	"fmt"
 	"github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/domain"
 
 	"github.com/go-kit/log"
@@ -19,7 +19,13 @@ type service struct {
 }
 
 // NewConsumerService creates a new consumer service with necessary dependencies.
-func NewConsumerService(taskRunnerService domain.TaskRunnerService, amqpChan *amqp.Channel, queueName string, consumer string, logger log.Logger) domain.Consumer {
+func NewConsumerService(
+	taskRunnerService domain.TaskRunnerService,
+	amqpChan *amqp.Channel,
+	queueName string,
+	consumer string,
+	logger log.Logger,
+) domain.Consumer {
 	return &service{
 		taskRunnerService: taskRunnerService,
 		amqpChan:          amqpChan,
@@ -43,38 +49,26 @@ func (s *service) Consume(ctx context.Context) error {
 		return err
 	}
 
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				_ = s.logger.Log()
-				return
-			case msg, ok := <-messages:
-				if !ok {
-					_ = s.logger.Log()
-					return
-				}
+	s.worker(ctx, messages)
 
-				err = s.executeTask(ctx, msg)
-				_ = s.logger.Log(err)
-			}
-		}
-	}()
-
-	return nil
+	chanErr := <-s.amqpChan.NotifyClose(make(chan *amqp.Error))
+	return chanErr
 }
 
-func (s *service) executeTask(ctx context.Context, msg amqp.Delivery) error {
+func (s *service) worker(ctx context.Context, messages <-chan amqp.Delivery) {
 
-	var event domain.Event
-	if err := json.Unmarshal(msg.Body, &event); err != nil {
-		return msg.Reject(true)
+	for msg := range messages {
+		var event domain.Event
+		if err := json.Unmarshal(msg.Body, &event); err != nil {
+			err = msg.Reject(true)
+		}
+
+		err := s.taskRunnerService.RunTask(ctx, event.TaskID)
+		if err != nil {
+			fmt.Println(err)
+			err = msg.Reject(true)
+		}
+
+		//err = msg.Ack(false)
 	}
-
-	err := s.taskRunnerService.RunTask(ctx, event.TaskID)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
