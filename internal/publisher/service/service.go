@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-
 	"github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/domain"
 
 	"github.com/go-kit/log"
@@ -10,34 +9,39 @@ import (
 )
 
 type service struct {
-	amqpConn *amqp.Connection
-	amqpChan *amqp.Channel
+	amqpConn     *amqp.Connection
+	amqpChan     *amqp.Channel
+	exchangeName string
+	exchangeKind string
 }
 
-func NewService(amqpConn *amqp.Connection, amqpChan *amqp.Channel, logger log.Logger) domain.Publisher {
+func NewService(amqpConn *amqp.Connection, amqpChan *amqp.Channel, exchangeName string, exchangeKind string, logger log.Logger) domain.Publisher {
 	var service domain.Publisher
 	{
-		service = newBasicService(amqpConn, amqpChan)
+		service = newBasicService(amqpConn, amqpChan, exchangeName, exchangeKind)
 		service = loggingServiceMiddleware(logger)(service)
 	}
 	return service
 }
 
-func newBasicService(amqpConn *amqp.Connection, amqpChan *amqp.Channel) domain.Publisher {
+func newBasicService(amqpConn *amqp.Connection, amqpChan *amqp.Channel, exchangeName string, exchangeKind string) domain.Publisher {
 	return &service{
-		amqpConn: amqpConn,
-		amqpChan: amqpChan,
+		amqpConn:     amqpConn,
+		amqpChan:     amqpChan,
+		exchangeName: exchangeName,
+		exchangeKind: exchangeKind,
 	}
 }
 
-func (s service) Publish(ctx context.Context, event *domain.Event) error {
+func (s *service) Publish(ctx context.Context, msg *amqp.Publishing) error {
+
 	if err := s.amqpChan.PublishWithContext(
 		ctx,
-		"",    // exchange
-		"key", // key
+		s.exchangeName,
+		"", // key
 		false,
 		false,
-		amqp.Publishing{},
+		*msg,
 	); err != nil {
 		return err
 	}

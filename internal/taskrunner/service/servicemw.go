@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	amqp "github.com/rabbitmq/amqp091-go"
 
 	"github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/domain"
 
@@ -10,12 +9,12 @@ import (
 )
 
 // Middleware describes a service (as opposed to endpoint) middleware.
-type middleware func(taskService domain.Publisher) domain.Publisher
+type middleware func(taskService domain.TaskRunnerService) domain.TaskRunnerService
 
 // loggingServiceMiddleware takes a logger as a dependency
 // and returns a service Middleware.
 func loggingServiceMiddleware(logger log.Logger) middleware {
-	return func(next domain.Publisher) domain.Publisher {
+	return func(next domain.TaskRunnerService) domain.TaskRunnerService {
 		return loggingMiddleware{
 			logger: logger,
 			next:   next,
@@ -25,17 +24,17 @@ func loggingServiceMiddleware(logger log.Logger) middleware {
 
 type loggingMiddleware struct {
 	logger log.Logger
-	next   domain.Publisher
+	next   domain.TaskRunnerService
 }
 
-func (mw loggingMiddleware) Publish(ctx context.Context, msg *amqp.Publishing) (err error) {
+func (mw loggingMiddleware) RunTask(ctx context.Context, taskID domain.TaskID) (err error) {
 	defer func() {
-		_ = mw.logger.Log("method", "Publish",
+		_ = mw.logger.Log("method", "RunTask",
 			//domain.LogFieldTraceID, traceID,
 			//domain.LogFieldSpanID, spanID,
-			"msg", msg,
+			"taskID", taskID,
 			"err", err,
 		)
 	}()
-	return mw.next.Publish(ctx, msg)
+	return mw.next.RunTask(ctx, taskID)
 }

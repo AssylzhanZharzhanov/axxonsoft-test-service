@@ -34,7 +34,7 @@ type Task struct {
 	ID             TaskID   `json:"id" gorm:"primaryKey;autoIncrement;column:id"`
 	StatusID       StatusID `json:"status_id" gorm:"column:status_id"`
 	HTTPStatusCode int      `json:"http_status_code" gorm:"column:http_status_code"`
-	ContentLength  int      `json:"content_length" gorm:"column:content_length"`
+	ContentLength  int64    `json:"content_length" gorm:"column:content_length"`
 	Method         string   `json:"method" gorm:"not null;column:method"`
 	URL            string   `json:"url" gorm:"not null;column:url"`
 	//Headers        Header   `json:"headers" gorm:"column:headers"`
@@ -79,6 +79,10 @@ type TaskRepository interface {
 	// Create - creates task in storage
 	//
 	Create(ctx context.Context, task *Task) (TaskID, error)
+
+	// Update - updates task in storage
+	//
+	Update(ctx context.Context, task *Task) error
 }
 
 // TaskRedisRepository - provides access to a cache storage.
@@ -111,4 +115,8 @@ type TaskService interface {
 	// ListTasks - returns list of tasks
 	//
 	ListTasks(ctx context.Context, criteria TaskSearchCriteria) ([]*Task, Total, error)
+
+	//UpdateTask - updates task
+	//
+	UpdateTask(ctx context.Context, task *Task) error
 }

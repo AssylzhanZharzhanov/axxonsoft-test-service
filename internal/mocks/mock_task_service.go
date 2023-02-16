@@ -80,3 +80,17 @@ func (mr *MockTaskServiceMockRecorder) ListTasks(arg0, arg1 interface{}) *gomock
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTasks", reflect.TypeOf((*MockTaskService)(nil).ListTasks), arg0, arg1)
 }
+
+// UpdateTask mocks base method.
+func (m *MockTaskService) UpdateTask(arg0 context.Context, arg1 *domain.Task) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateTask", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateTask indicates an expected call of UpdateTask.
+func (mr *MockTaskServiceMockRecorder) UpdateTask(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTask", reflect.TypeOf((*MockTaskService)(nil).UpdateTask), arg0, arg1)
+}
