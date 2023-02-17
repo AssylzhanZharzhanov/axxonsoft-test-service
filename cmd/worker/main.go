@@ -65,6 +65,16 @@ func main() {
 		logFatal(err)
 	}
 
+	//Don't dispatch a new message to a worker until it has processed and acknowledged the previous one.
+	err = amqpChan.Qos(
+		1,
+		0,
+		false,
+	)
+	if err != nil {
+		logFatal(err)
+	}
+
 	// Repository layer
 	//
 	taskRepository := pkgTaskRepository.NewRepository(db)

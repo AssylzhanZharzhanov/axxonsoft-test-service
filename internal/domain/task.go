@@ -6,6 +6,7 @@ import (
 )
 
 const (
+	// TableName - name of table
 	TableName = "tasks"
 )
 
@@ -23,10 +24,10 @@ type Header struct {
 
 // TaskWrite - represents write task
 type TaskWrite struct {
-	ID     TaskID `json:"id"`
-	Method string `json:"method"`
-	URL    string `json:"url"`
-	//Headers        Header   `json:"headers" gorm:"column:headers"`
+	ID      TaskID                 `json:"id"`
+	Method  string                 `json:"method"`
+	URL     string                 `json:"url"`
+	Headers map[string]interface{} `json:"headers"`
 }
 
 // Task - represents task
@@ -37,9 +38,10 @@ type Task struct {
 	ContentLength  int64    `json:"content_length" gorm:"column:content_length"`
 	Method         string   `json:"method" gorm:"not null;column:method"`
 	URL            string   `json:"url" gorm:"not null;column:url"`
-	//Headers        Header   `json:"headers" gorm:"column:headers"`
+	Headers        JSONB    `json:"headers" gorm:"column:headers"`
 }
 
+// TaskSearchCriteria - task search criteria
 type TaskSearchCriteria struct {
 	Page PageRequest
 }
@@ -56,6 +58,7 @@ func (t Task) Validate() error {
 	return nil
 }
 
+// Key - returns key
 func (id TaskID) Key() string {
 	return fmt.Sprintf("?task/%d", id)
 }

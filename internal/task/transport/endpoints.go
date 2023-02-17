@@ -9,12 +9,17 @@ import (
 	"github.com/go-kit/log"
 )
 
+// Endpoints collects all of the endpoints that compose an add service. It's meant to
+// be used as a helper struct, to collect all of the endpoints into a single
+// parameter.
 type Endpoints struct {
 	CreateTaskEndpoint endpoint.Endpoint
 	GetTaskEndpoint    endpoint.Endpoint
 	ListTasksEndpoint  endpoint.Endpoint
 }
 
+// NewEndpoints returns a Set that wraps the provided server, and wires in all of the
+// expected endpoint middlewares via the various parameters.
 func NewEndpoints(service domain.TaskService, log log.Logger) Endpoints {
 	return Endpoints{
 		CreateTaskEndpoint: MakeCreateTaskEndpoint(service),
@@ -32,6 +37,7 @@ type createTaskResponse struct {
 	Err    error
 }
 
+// MakeCreateTaskEndpoint - Impl.
 func MakeCreateTaskEndpoint(service domain.TaskService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(createTaskRequest)
@@ -44,6 +50,7 @@ func MakeCreateTaskEndpoint(service domain.TaskService) endpoint.Endpoint {
 	}
 }
 
+// MakeGetTaskEndpoint - Impl.
 func MakeGetTaskEndpoint(service domain.TaskService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(getTaskRequest)
@@ -65,6 +72,7 @@ type getTaskResponse struct {
 	Err  error
 }
 
+// MakeListTasksEndpoint - Impl.
 func MakeListTasksEndpoint(service domain.TaskService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(listTaskRequest)

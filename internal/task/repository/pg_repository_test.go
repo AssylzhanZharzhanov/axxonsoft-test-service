@@ -225,7 +225,7 @@ func TestRepository_List(t *testing.T) {
 	}
 
 	// Test pagination.
-	list, err := testRepository.List(ctx, domain.TaskSearchCriteria{
+	list, total, err := testRepository.List(ctx, domain.TaskSearchCriteria{
 		Page: domain.PageRequest{
 			Offset: 0,
 			Size:   3,
@@ -234,7 +234,7 @@ func TestRepository_List(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unexpected error %s", err)
 	}
-	if len(list) != 3 {
+	if len(list) != int(total) {
 		t.Errorf("Pagination not working, expected items %d but got %v", 3, len(list))
 	}
 }

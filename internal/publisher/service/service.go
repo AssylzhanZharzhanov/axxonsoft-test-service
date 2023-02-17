@@ -15,6 +15,7 @@ type service struct {
 	exchangeKind string
 }
 
+// NewService - creates a new service
 func NewService(amqpConn *amqp.Connection, amqpChan *amqp.Channel, exchangeName string, exchangeKind string, logger log.Logger) domain.Publisher {
 	var service domain.Publisher
 	{

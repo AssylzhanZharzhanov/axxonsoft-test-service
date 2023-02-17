@@ -74,7 +74,7 @@ func (s *service) GetTask(ctx context.Context, taskID domain.TaskID) (*domain.Ta
 	}
 
 	// Get from cache
-	cachedTask, err := s.redisRepository.Get(ctx, taskID.Key())
+	cachedTask, _ := s.redisRepository.Get(ctx, taskID.Key())
 	if cachedTask != nil {
 		return cachedTask, nil
 	}

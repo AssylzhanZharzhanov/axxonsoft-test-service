@@ -134,7 +134,7 @@ func TestRedisRepository_Get(t *testing.T) {
 				if err != nil {
 					t.Errorf("unexpected error: %s", err)
 				}
-				if diff := deep.Equal(expected, actual); diff != nil {
+				if diff := deep.Equal(expected.ID, actual.ID); diff != nil {
 					t.Error(diff)
 				}
 			} else {

@@ -190,7 +190,7 @@ func TestService_GetTask(t *testing.T) {
 		AnyTimes()
 
 	redisStub.EXPECT().
-		Set(ctx, notCachedKey, validTask2, 3600).
+		Set(ctx, notCachedKey, validTask2, cacheDuration).
 		Return(nil).
 		AnyTimes()
 

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 
 	"github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/domain"
@@ -18,6 +19,7 @@ func NewTaskRunnerService(taskRepository domain.TaskRepository, logger log.Logge
 	var service domain.TaskRunnerService
 	{
 		service = newBasicService(taskRepository)
+		service = loggingServiceMiddleware(logger)(service)
 	}
 	return service
 }
@@ -35,7 +37,7 @@ func (s *service) RunTask(ctx context.Context, taskID domain.TaskID) error {
 		task.StatusID = domain.StatusError
 	}
 
-	err = s.DoRequest(ctx, task)
+	err = s.MakeRequest(ctx, task)
 	if err != nil {
 		task.StatusID = domain.StatusError
 	}
@@ -48,14 +50,20 @@ func (s *service) RunTask(ctx context.Context, taskID domain.TaskID) error {
 	return nil
 }
 
-func (s *service) DoRequest(ctx context.Context, task *domain.Task) error {
+func (s *service) MakeRequest(ctx context.Context, task *domain.Task) error {
 	httpRequest, err := http.NewRequestWithContext(ctx, task.Method, task.URL, nil)
 	if err != nil {
 		task.StatusID = domain.StatusError
 	}
-	// @TODO add headers
-	//httpRequest.Header.Set("Content-Type", "application/json")
-	//httpRequest.Header.Set("X-Api-Key", s.secretAPIKey)
+
+	headers, err := s.encodeHeaders(task.Headers)
+	if err != nil {
+		return err
+	}
+
+	for key, value := range headers {
+		httpRequest.Header.Set(key, value)
+	}
 
 	httpResponse, err := http.DefaultClient.Do(httpRequest)
 	if err != nil {
@@ -68,4 +76,14 @@ func (s *service) DoRequest(ctx context.Context, task *domain.Task) error {
 	task.ContentLength = httpResponse.ContentLength
 
 	return nil
+}
+
+func (s *service) encodeHeaders(headers domain.JSONB) (map[string]string, error) {
+	var result map[string]string
+	err := json.Unmarshal(headers, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }

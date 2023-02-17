@@ -16,6 +16,7 @@ type service struct {
 	publisher domain.Publisher
 }
 
+// NewService - creates a new service
 func NewService(publisher domain.Publisher, logger log.Logger) domain.EventService {
 	var service domain.EventService
 	{
