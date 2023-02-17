@@ -4,6 +4,7 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
+// NewRabbitMQConnection creates a new connection to rabbit mq.
 func NewRabbitMQConnection(uri string) (*amqp.Connection, error) {
 	conn, err := amqp.Dial(uri)
 	if err != nil {
@@ -13,6 +14,7 @@ func NewRabbitMQConnection(uri string) (*amqp.Connection, error) {
 	return conn, nil
 }
 
+// DeclareBinding - declares bindings
 func DeclareBinding(amqpChan *amqp.Channel, exchangeName string, exchangeKind string, queueName string) (amqp.Queue, error) {
 	var (
 		queue amqp.Queue
@@ -34,6 +36,7 @@ func DeclareBinding(amqpChan *amqp.Channel, exchangeName string, exchangeKind st
 	return queue, nil
 }
 
+// DeclareExchange - declares exchange to channel
 func DeclareExchange(amqpChan *amqp.Channel, exchangeName string, exchangeKind string) error {
 	return amqpChan.ExchangeDeclare(
 		exchangeName,
@@ -46,6 +49,7 @@ func DeclareExchange(amqpChan *amqp.Channel, exchangeName string, exchangeKind s
 	)
 }
 
+// DeclareQueue - declare queue to channel
 func DeclareQueue(amqpChan *amqp.Channel, queueName string) (amqp.Queue, error) {
 	return amqpChan.QueueDeclare(
 		queueName,
@@ -57,6 +61,7 @@ func DeclareQueue(amqpChan *amqp.Channel, queueName string) (amqp.Queue, error) 
 	)
 }
 
+// BindQueue - bind queue to channel
 func BindQueue(amqpChan *amqp.Channel, queueName, key, exchangeName string) error {
 	return amqpChan.QueueBind(queueName, key, exchangeName, false, nil)
 }

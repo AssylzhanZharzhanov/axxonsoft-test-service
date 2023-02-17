@@ -13,4 +13,5 @@ type PageRequest struct {
 	Size   int // page size
 }
 
+// Total - total
 type Total int

@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// EncodeErrorResponse - encodes error response
 func EncodeErrorResponse(_ context.Context, err error, w http.ResponseWriter) {
 	if err == nil {
 		panic("encodeError with nil error")

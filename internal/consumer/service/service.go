@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/AssylzhanZharzhanov/axxonsoft-test-service/internal/domain"
 
 	"github.com/go-kit/log"
@@ -49,7 +48,7 @@ func (s *service) Consume(ctx context.Context) error {
 		return err
 	}
 
-	s.worker(ctx, messages)
+	go s.worker(ctx, messages)
 
 	chanErr := <-s.amqpChan.NotifyClose(make(chan *amqp.Error))
 	return chanErr
@@ -60,15 +59,21 @@ func (s *service) worker(ctx context.Context, messages <-chan amqp.Delivery) {
 	for msg := range messages {
 		var event domain.Event
 		if err := json.Unmarshal(msg.Body, &event); err != nil {
-			err = msg.Reject(true)
+			if err = msg.Reject(true); err != nil {
+				_ = s.logger.Log("error: %s", err)
+			}
 		}
 
 		err := s.taskRunnerService.RunTask(ctx, event.TaskID)
 		if err != nil {
-			fmt.Println(err)
-			err = msg.Reject(true)
+			if err = msg.Reject(true); err != nil {
+				_ = s.logger.Log("error: %s", err)
+			}
 		}
 
-		//err = msg.Ack(false)
+		err = msg.Ack(false)
+		if err != nil {
+			_ = s.logger.Log("error: %s", err)
+		}
 	}
 }

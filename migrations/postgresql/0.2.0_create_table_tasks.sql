@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS tasks(
     content_length   INT,
     http_status_code INT,
     url              VARCHAR NOT NULL,
---     header           JSONB,
     created_at       BIGINT,
     updated_at       BIGINT,
     deleted_at       BIGINT

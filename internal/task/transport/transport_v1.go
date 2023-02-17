@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// RegisterRoutersV1 - v1 routers.
 func RegisterRoutersV1(router *mux.Router, endpoints Endpoints, logger log.Logger) {
 
 	options := []kithttp.ServerOption{
@@ -47,10 +48,17 @@ func decodeCreateTaskRequest(ctx context.Context, r *http.Request) (interface{},
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		return nil, err
 	}
+
+	headers, err := json.Marshal(body.Headers)
+	if err != nil {
+		return nil, err
+	}
+
 	return createTaskRequest{
 		Task: &domain.Task{
-			Method: body.Method,
-			URL:    body.URL,
+			Method:  body.Method,
+			URL:     body.URL,
+			Headers: headers,
 		},
 	}, nil
 }

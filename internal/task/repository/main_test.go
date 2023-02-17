@@ -241,7 +241,7 @@ func setupDatabase() error {
 			}
 		}
 	}
-	
+
 	return nil
 }
 
